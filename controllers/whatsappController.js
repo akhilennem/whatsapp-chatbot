@@ -117,7 +117,7 @@ const manageText = async (changes, res) => {
         if(platforms[text]){
         await sendMessage(from, `Great choice! You have selected ${platforms[text]}. Our team will contact you soon.`);
         user.step = 1;
-        user.websitetype = text;
+        user.websitetype = platforms[text];
         }else{
           await sendMessage(from, "Invalid option, please select 1, 2, or 3.");
           return;
