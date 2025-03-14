@@ -1,0 +1,25 @@
+{
+  "name": "custom-qrcode",
+  "version": "1.0.0",
+  "description": "custom qr code",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon app.js"
+  },
+  "author": "Akhil N M",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.8",
+    "body-parser": "^1.20.3",
+    "dotenv": "^16.4.5",
+    "env": "^0.0.2",
+    "express": "^4.21.1",
+    "form-data": "^4.0.2",
+    "google-auth-library": "^9.15.0",
+    "mongodb": "^6.11.0",
+    "mongoose": "^8.8.3",
+    "nodemon": "^3.1.7",
+    "qrcode": "^1.5.4",
+    "uuid": "^11.0.3"
+  }
+}
