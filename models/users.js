@@ -1,4 +1,4 @@
-const { type } = require('@testing-library/user-event/dist/cjs/utility/type.js');
+const { defaultMaxListeners } = require('form-data');
 const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
 
@@ -25,6 +25,7 @@ const LeadSchema = mongoose.Schema(
         selectedService: String,
         isaskedforhuman:{type:Boolean,default:false},
         selectedServices: [],
+        priceEnquiries: [],
         socialmedia: [],
         websitetype: String,
         businessName: String,
@@ -32,6 +33,10 @@ const LeadSchema = mongoose.Schema(
         industry: String,
         customMessage:String,
         location: String,
+        isConsultationBooked:{
+            type:Boolean,
+            default:false
+        },
         preferredContact: {
             type: String,
             enum: ["Phone", "Email", "WhatsApp"]

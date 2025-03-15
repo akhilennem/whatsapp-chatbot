@@ -27,7 +27,7 @@ const webHook = async (req, res) => {
 const manageText = async (changes, res) => {
     const message = changes[0];
     const from = message.from;
-    const text = message.text?.body?.trim().toLowerCase();
+    let text = message.text?.body?.trim().toLowerCase();
     console.log("User message:", text);
 
     let user = await UserModel.findOne({ phone: from }).catch(err => console.log(err.message));
@@ -62,7 +62,7 @@ const manageText = async (changes, res) => {
             await sendMessage(from, "Our expert will contact you within 10 minutes.");
             user.isaskedforhuman=true;
         } else if (text === "6") {
-          await sendMessage(from, "Please type your custom message, and our team will get back to you soon.");
+          await sendMessage(from, "Please type your concerns, and our team will get back to you soon.");
           user.step = 30; 
       } else {
           await sendMessage(from, "Invalid option. Please choose 1-6.");
@@ -87,7 +87,7 @@ const manageText = async (changes, res) => {
             } else {
                 user.step = 3;
                 user.selectedService = text;
-                user.selectedServices = selectedService[text];
+                user.selectedServices.push(selectedService[text]);
             }
         } else {
             await sendMessage(from, "Invalid option, please choose 1-5.");
@@ -108,7 +108,6 @@ const manageText = async (changes, res) => {
             user.step = 1;
             user.selectedService = null;
         } else {
-          console.log("/////??")
             await sendMessage(from, "Please reply with 'Yes' or 'No'.");
         }
     } else if (user.step === 4) {
@@ -118,6 +117,7 @@ const manageText = async (changes, res) => {
         await sendMessage(from, `Great choice! You have selected ${platforms[text]}. Our team will contact you soon.`);
         user.step = 1;
         user.websitetype = platforms[text];
+        user.isLeadConverted=true;
         }else{
           await sendMessage(from, "Invalid option, please select 1, 2, or 3.");
           return;
@@ -128,8 +128,9 @@ const manageText = async (changes, res) => {
           if (platforms[text]) {
               await sendMessage(from, `Great choice! We'll focus on ${platforms[text]} marketing. Our team will contact you soon.`);
               user.step = 1;
-              user.socialmedia=platforms[text];
+              user.socialmedia.push(platforms[text]);
               user.selectedService = null;
+              user.isLeadConverted=true;
           } else {
               await sendMessage(from, "Invalid option, please select 1, 2, or 3.");
               return;
@@ -138,6 +139,7 @@ const manageText = async (changes, res) => {
           await sendMessage(from, `Thanks! We have received your details: ${text}. Our team will contact you soon.`);
           user.step = 1;
           user.selectedService = null;
+          user.isLeadConverted=true;
           if (text.includes('www')) {
               user.businessWebsite = text;
           } else {
@@ -165,11 +167,13 @@ const manageText = async (changes, res) => {
         user.location = text;
         await sendMessage(from, "How would you like us to contact you? (Phone, WhatsApp)");
         user.step = 15;
+        user.isConsultationBooked=true;
     } else if (user.step === 15) {
         user.preferredContact = text;
         await sendMessage(from, `Thanks, ${user.name}! We’ve received your details. Our team will contact you soon.`);
         user.step = 1;
-        user.isLeadConverted = true; // Mark as a lead once they complete the form
+        user.isaskedforhuman=true;
+        user.isLeadConverted = true; 
     } else if (user.step === 20) {
       const pricingResponses = {
           "1": "Our SEO pricing starts at $XXX. Want a custom quote? (Reply Yes/No)",
@@ -177,12 +181,23 @@ const manageText = async (changes, res) => {
           "3": "Social Media pricing depends on platforms and ad spend. Want a pricing breakdown? (Reply Yes/No)",
           "4": "Web Design pricing depends on project scope. Want a detailed quote? (Reply Yes/No)"
       };
-  
+      let priceEnquiries;
+  if(text=="1"){
+    priceEnquiries='SEO'
+  }else if(text=='2'){
+    priceEnquiries='PPC'
+  }else if(text=='3'){
+    priceEnquiries='Social Media'
+  }else if(text=='4'){
+    priceEnquiries='Web Design'
+  }
       if (pricingResponses[text]) {
           await sendMessage(from, pricingResponses[text]);
-          user.step = 21; // Move to the next step where the bot waits for Yes/No
-          // user.selectedService = text;
-      } else {
+          user.step = 21; 
+          user.selectedService=text;
+          user.isLeadConverted=true;
+          user.priceEnquiries.push(priceEnquiries);
+          } else {
           await sendMessage(from, "Invalid option. Please choose 1-4.");
       }
   } else if (user.step === 21) {
@@ -200,6 +215,7 @@ const manageText = async (changes, res) => {
       user.email = text;
       await sendMessage(from, `Thanks! We’ll send the pricing details to ${user.email}. Our team will contact you soon.`);
       user.step = 1;
+      user.isLeadConverted=true;
       user.selectedService = null;
   }else if (user.step === 30) {
     user.customMessage = text;
@@ -213,6 +229,8 @@ const manageText = async (changes, res) => {
             $set: {
                 step: user.step,
                 email:user.email,
+                isConsultationBooked:user.isConsultationBooked,
+                priceEnquiries:user.priceEnquiries,
                 isaskedforhuman:user.isaskedforhuman,
                 customMessage: user.customMessage,
                 selectedServices: user.selectedServices,

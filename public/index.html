@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Leads</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>New Leads</h1>
+        <div id="leadsContainer"></div>
+    </div>
+
+    <script>
+        async function fetchLeads() {
+            try {
+                const response = await fetch("http://localhost:8080/whatsapp/get-new-leads");
+                const leads = await response.json();
+
+                if (leads.length === 0) {
+                    document.getElementById("leadsContainer").innerHTML = "<p>No new leads found.</p>";
+                    return;
+                }
+
+                let output = "";
+                leads.forEach(lead => {
+                    // Add a green border if consultation is booked
+                    const borderClass = lead.isConsultationBooked ? "consultation-booked" : "";
+
+                    output += `<div class='lead-card ${borderClass}'>`;
+
+                    // Display "Consultation Booked" badge
+                    if (lead.isConsultationBooked) {
+                        output += `<p><span class="badge success">Consultation Booked</span></p>`;
+                    }
+
+                    output += `<h2>Lead ID: ${lead._id}</h2>`;
+
+                    const importantFields = ["phone", "status", "name", "email", "address", "jobPlace", "age", "selectedServices", 
+                                            "businessName", "businessWebsite", "industry", "customMessage", "location", 
+                                            "preferredContact", "socialmedia", "priceEnquiries", "websitetype", "isLeadConverted"];
+
+                    importantFields.forEach(field => {
+                        if (lead[field] && lead[field] !== "") {
+                            const value = Array.isArray(lead[field]) ? lead[field].join(", ") : lead[field];
+                            output += `<p><strong>${field.replace(/([A-Z])/g, ' $1').toUpperCase()}:</strong> ${value}</p>`;
+                        }
+                    });
+
+                    // Add call request message
+                    if (lead.isaskedforhuman) {
+                        output += `<p><span class="badge warning">Lead requested for a call</span></p>`;
+                    }
+
+                    output += "</div>";
+                });
+
+                document.getElementById("leadsContainer").innerHTML = output;
+            } catch (error) {
+                console.error("Error fetching leads:", error);
+                document.getElementById("leadsContainer").innerHTML = "<p>Error loading leads.</p>";
+            }
+        }
+
+        fetchLeads();
+    </script>
+</body>
+</html>
