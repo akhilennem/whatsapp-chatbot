@@ -1,12 +1,19 @@
 const mongoose = require("mongoose");
 
-const questionSchema = new mongoose.Schema({
-  question: String,
-  options: [String], 
-  nextStep: {
-    type: mongoose.Schema.Types.Mixed, 
-  },
+const QuestionSchema = new mongoose.Schema({
+  stepKey: { type: String, required: true, unique: true },
+  questionText: { type: String },
+  options: [
+    {
+      optionText: String,
+      nextQuestionStepKey: String 
+    }
+  ],
+  inputType: { type: String, enum: ["selection", "text"], default: "selection" },
+  nextQuestions:[],
+  isYesOrNo:{type:Boolean,
+    default:false
+  }
 });
 
-const Question = mongoose.model("Question", questionSchema);
-module.exports = Question;
+module.exports = mongoose.model("Question", QuestionSchema);

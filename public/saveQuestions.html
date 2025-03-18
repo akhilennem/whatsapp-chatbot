@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Save Record</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="container mt-5">
+    <h2 class="mb-4">Save Record</h2>
+    <form id="recordForm">
+      <div class="mb-3">
+        <label for="stepKey" class="form-label">Step Key</label>
+        <input
+          type="text"
+          class="form-control"
+          id="stepKey"
+          name="stepKey"
+          required
+        />
+      </div>
+      <div class="mb-3">
+        <label for="questionText" class="form-label">Question Text</label>
+        <textarea
+          class="form-control"
+          id="questionText"
+          name="questionText"
+          rows="3"
+          required
+        ></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="inputType" class="form-label">Input Type</label>
+        <select
+          class="form-select"
+          id="inputType"
+          name="inputType"
+          required
+          onchange="toggleInputType()"
+        >
+          <option value="selection">Selection</option>
+          <option value="text">Text</option>
+        </select>
+      </div>
+      <div id="optionsContainer">
+        <h5>Options</h5>
+        <div id="optionsList"></div>
+        <button
+          type="button"
+          class="btn btn-secondary mt-2"
+          onclick="addOption()"
+        >
+          Add Option
+        </button>
+      </div>
+      <div id="nextQuestionsContainer" style="display: none">
+        <h5>Next Questions</h5>
+        <div id="nextQuestionsList"></div>
+        <button
+          type="button"
+          class="btn btn-secondary mt-2"
+          onclick="addNextQuestion()"
+        >
+          Add Question
+        </button>
+      </div>
+      <button type="submit" class="btn btn-primary mt-4">Save Record</button>
+    </form>
+
+    <script>
+      function toggleInputType() {
+        const inputType = document.getElementById("inputType").value;
+        document.getElementById("optionsContainer").style.display =
+          inputType === "selection" ? "block" : "none";
+        document.getElementById("nextQuestionsContainer").style.display =
+          inputType === "text" ? "block" : "none";
+      }
+
+      function addOption() {
+        const optionsList = document.getElementById("optionsList");
+        const optionIndex = optionsList.children.length;
+        const optionDiv = document.createElement("div");
+        optionDiv.classList.add("mb-2", "input-group");
+        optionDiv.innerHTML = `<input type="text" class="form-control" name="options[${optionIndex}][optionText]" placeholder="Option Text" required>
+                <input type="text" class="form-control" name="options[${optionIndex}][nextQuestionStepKey]" placeholder="Next Step Key" required>
+                <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">Remove</button>`;
+        optionsList.appendChild(optionDiv);
+      }
+
+      function addNextQuestion() {
+        const nextQuestionsList = document.getElementById("nextQuestionsList");
+        const nextQuestionIndex = nextQuestionsList.children.length;
+
+        // Create wrapper div for question selection
+        const questionWrapper = document.createElement("div");
+        questionWrapper.classList.add("mb-3");
+
+        // Create dropdown for choosing type (Options or Single Question)
+        const typeSelect = document.createElement("select");
+        typeSelect.classList.add("form-select", "mb-2");
+        typeSelect.innerHTML = `
+          <option value="">Select Type</option>
+          <option value="options">Options</option>
+          <option value="single">Single Question</option>
+        `;
+
+        // Create div to hold the actual input field
+        const inputDiv = document.createElement("div");
+
+        // Handle dropdown change
+        typeSelect.addEventListener("change", function () {
+          inputDiv.innerHTML = ""; // Clear previous input
+
+          if (this.value === "options") {
+            inputDiv.innerHTML = `
+              <div class="input-group">
+                <input type="text" class="form-control" name="nextQuestions[${nextQuestionIndex}][stepKey]" placeholder="Step Key" required>
+                <button type="button" class="btn btn-danger" onclick="this.parentElement.parentElement.remove()">Remove</button>
+              </div>
+            `;
+          } else if (this.value === "single") {
+            inputDiv.innerHTML = `
+              <div class="input-group">
+                <input type="text" class="form-control" name="nextQuestions[${nextQuestionIndex}]" placeholder="Next Question" required>
+                <button type="button" class="btn btn-danger" onclick="this.parentElement.parentElement.remove()">Remove</button>
+              </div>
+            `;
+          }
+        });
+
+        // Append elements
+        questionWrapper.appendChild(typeSelect);
+        questionWrapper.appendChild(inputDiv);
+        nextQuestionsList.appendChild(questionWrapper);
+      }
+
+      document
+        .getElementById("recordForm")
+        .addEventListener("submit", async function (event) {
+          event.preventDefault();
+          const formData = new FormData(this);
+          const record = {
+            stepKey: formData.get("stepKey"),
+            questionText: formData.get("questionText"),
+            inputType: formData.get("inputType"),
+            options: [],
+            nextQuestions: [],
+          };
+
+          if (record.inputType === "selection") {
+            document
+              .querySelectorAll("#optionsList .input-group")
+              .forEach((optionDiv) => {
+                record.options.push({
+                  optionText: optionDiv.children[0].value,
+                  nextQuestionStepKey: optionDiv.children[1].value,
+                });
+              });
+          } else {
+            document
+              .querySelectorAll("#nextQuestionsList .mb-3")
+              .forEach((questionDiv) => {
+                const select = questionDiv.querySelector("select");
+                const inputField = questionDiv.querySelector(".form-control");
+
+                if (select.value === "options") {
+                  record.nextQuestions.push({
+                    stepKey: inputField.value,
+                    isSelectionFieldNext: true,
+                  });
+                } else if (select.value === "single") {
+                  record.nextQuestions.push(inputField.value);
+                }
+              });
+          }
+
+          try {
+            const response = await fetch(
+              "http://localhost:8000/whatsapp/add-questions",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(record),
+              }
+            );
+            const result = await response.json();
+            alert("Record saved successfully!");
+            console.log("Response:", result);
+          } catch (error) {
+            alert("Error saving record");
+            console.error("Error:", error);
+          }
+        });
+    </script>
+  </body>
+</html>

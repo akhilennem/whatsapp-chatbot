@@ -43,7 +43,9 @@ const LeadSchema = mongoose.Schema(
         },
         step: { type: Number, default: 0 },
         subStep: { type: Number, default: 0 },
-        isLeadConverted: { type: Boolean, default: false } // Lead status
+        isLeadConverted: { type: Boolean, default: false }, 
+        stepKey:String,
+        questionIndex:{type:Number,default:1},
     },  
     { timestamps: true }
 );

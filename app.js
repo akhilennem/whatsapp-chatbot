@@ -2,20 +2,22 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
-const cors=require('cors')
 const mongoose = require("mongoose");
 require('dotenv').config();
 const app = express();
+const cors=require('cors')
 app.use(bodyParser.json());
 
+
 app.use(cors({
-  origin: '*', // Allow specific origin
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed methods
-  allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
+  origin: '*', 
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  // allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
 }));
 
-const uri = "mongodb+srv://akhilnmtechintl:h2w0tMY73yxqgJmE@cloudapi.x5im9.mongodb.net/?retryWrites=true&w=majority";
-// const uri='mongodb://localhost:27017/'
+
+// const uri = "mongodb+srv://akhilnmtechintl:h2w0tMY73yxqgJmE@cloudapi.x5im9.mongodb.net/?retryWrites=true&w=majority";
+const uri='mongodb://localhost:27017/'
 
 mongoose.connect(uri, {
   useNewUrlParser: true,
@@ -27,15 +29,15 @@ mongoose.connect(uri, {
 
 app.use(express.static(path.join(__dirname, "public")));
 
-// Route to serve the HTML file
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
 });
+app.get("/questions", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "saveQuestions.html"));
+});
 
-// Routes
 app.use("/whatsapp", require("./routes/whatsapp"));
 app.use("/products", require("./routes/products"));
 
-// Start the server
-const PORT = 8080;
-app.listen(PORT, () => console.log(`Server running at port ${PORT}`));
+const PORT = 8000;
+app.listen(PORT, () => console.log(`Server running at port http://localhost:${PORT}`));
