@@ -2,15 +2,20 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
+const cors=require('cors')
 const mongoose = require("mongoose");
 require('dotenv').config();
 const app = express();
 app.use(bodyParser.json());
 
-
+app.use(cors({
+  origin: '*', // Allow specific origin
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed methods
+  allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
+}));
 
 const uri = "mongodb+srv://akhilnmtechintl:h2w0tMY73yxqgJmE@cloudapi.x5im9.mongodb.net/?retryWrites=true&w=majority";
-
+// const uri='mongodb://localhost:27017/'
 
 mongoose.connect(uri, {
   useNewUrlParser: true,

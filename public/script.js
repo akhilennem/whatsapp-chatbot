@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const tableBody = document.getElementById("leadsTableBody");
 
     try {
-        const response = await fetch("http://localhost:8080/whatsapp/get-new-leads");
+        const response = await fetch("https://m4vx17k1-8080.inc1.devtunnels.ms/whatsapp/get-new-leads");
         const leads = await response.json();
 
         leads.forEach((lead) => {
@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 async function fetchLeads() {
     try {
-        const response = await fetch("http://localhost:8080/whatsapp/get-new-leads");
+        const response = await fetch("https://m4vx17k1-8080.inc1.devtunnels.ms/whatsapp/get-new-leads");
         const leads = await response.json();
 
         if (leads.length === 0) {
