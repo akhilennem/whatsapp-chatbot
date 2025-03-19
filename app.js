@@ -20,8 +20,6 @@ app.use(cors({
 const uri='mongodb://localhost:27017/'
 
 mongoose.connect(uri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
   dbName: "whatsapp", 
 })
 .then(() => console.log("Connected to MongoDB successfully"))

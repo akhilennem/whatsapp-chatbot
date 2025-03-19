@@ -70,12 +70,17 @@ const manageText = async (changes, res) => {
       user.stepKey = nextQuestion.stepKey;
     } else {
       console.log("text");
-      if (nextQuestion.nextQuestions.length >= user.questionIndex) {
+      if(nextQuestion.nextQuestions.length==0){
+        let singleQuestion = nextQuestion.questionText;;
+        await sendMessage(from, singleQuestion);
+        user.stepKey = 'welcome';
+      }
+      else if (nextQuestion.nextQuestions.length >= user.questionIndex) {
         let singleQuestion = nextQuestion.nextQuestions[user.questionIndex];
         await sendMessage(from, singleQuestion);
         user.stepKey = nextQuestion.stepKey;
         user.questionIndex += 1;
-      } else {
+      }  else {
         user.stepKey = "welcome";
         user.questionIndex = 0;
       }
